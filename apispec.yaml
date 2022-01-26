@@ -129,7 +129,7 @@ info:
 paths:
   /api/v1/confirmations:
     post:
-      summary: Request confirmation email 1
+      summary: Request confirmation email
       tags:
         - Confirmations
       description: ''
@@ -1587,3 +1587,4 @@ x-tagGroups:
   - name: Users
     tags:
       - Users
+x-extension-2: null
