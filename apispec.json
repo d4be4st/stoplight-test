@@ -1,0 +1,2311 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Example App",
+    "description": "# Example app API\n\n## Overview\nThe API is implemented according to the [jsonapi specification](http://jsonapi.org).\n\n### Headers\n\n`Accept` header must include `application/vnd.api+json`.\n\n`Content-Type` header, if present, must be equal to `application/vnd.api+json`.\n\n<!-- ### Pagination\n\nYou can specify page number and page size in the following format:\n```\n?page[number]=2&page[size]=1\n```\nPlease start paginating from page 1, page 0 will also return the first page. -->\n\n### Sorting\n\nWe support the JSON API standard for sorting parameters, described [here](http://jsonapi.org/format/#fetching-sorting).\nFor example the following query parameter: ```?sort=created_at``` or ```?sort=-created_at```.\nAny attribute that is returned in the API calls is sortable.\n\n### Filtering\n\nWe support the JSON API standard for filtering parameters, described [here](https://jsonapi.org/format/#fetching-filtering).\n\n### Relationship Inclusion\n\nWe support the JSON API standard for relationship inclusion, described [here](http://jsonapi.org/format/#fetching-includes).\nFor example the following query parameter: ```?include=relationship_name```.\nAny relationship that is returned in the API calls is includable.\nThere are also some default relationships included in the show endpoints for the resources.\n\n### Sparse Fieldsets\n\nWe support the JSON API standard for returning only specific fields, described [here](https://jsonapi.org/format/#fetching-sparse-fieldsets).\n\n\n### AWS direct upload\n<details>\n  <summary> 1. Presign endpoint</summary>\n\n#### 1. Presign endpoint\nSend a request to the presign endpoint. Include the filename and (MIME) type as query parameters:\n```\ncurl -X GET 'http://localhost:3000/api/v1/uploads/presign?filename=document.png&type=application/pdf'\n```\nYou will receive the direct upload details.\n```\n{\n   \"fields\":{\n      \"key\":\"cache/14786af0988ba48beef2bbb111f903d9.png\",\n      \"Content-Disposition\":\"inline; filename=\\\"document.pdf\\\"; filename*=UTF-8''document.pdf\",\n      \"Content-Type\":\"application/pdf\",\n      \"policy\":\"eyJleHBpcmF0aW9uIjoiMjAyMC0wMi0wM1QxNTowMDoxNFoiLCJjb25kaXRpb25zIjpbeyJidWNrZXQiOiI3MDIxOTI1MTg2MTAtYXBpLWFpZGVudHlmeS1zdGFnaW5nIn0seyJrZXkiOiJjYWNoZS8xNDc4NmFmMDk4OGJhNDhiZWVmMmJiYjExMWY5MDNkOS5wbmcifSxbImNvbnRlbnQtbGVuZ3RoLXJhbmdlIiwwLDEwNDg1NzYwXSx7IkNvbnRlbnQtRGlzcG9zaXRpb24iOiJpbmxpbmU7IGZpbGVuYW1lPVwiaW1wbGFudC5wbmdcIjsgZmlsZW5hbWUqPVVURi04JydpbXBsYW50LnBuZyJ9LHsiQ29udGVudC1UeXBlIjoiaW1hZ2UvcG5nIn0seyJ4LWFtei1jcmVkZW50aWFsIjoiQUtJQTJHN1BQUVhKRVkzVDVaVVkvMjAyMDAyMDMvdXMtZWFzdC0xL3MzL2F3czRfcmVxdWVzdCJ9LHsieC1hbXotYWxnb3JpdGhtIjoiQVdTNC1ITUFDLVNIQTI1NiJ9LHsieC1hbXotZGF0ZSI6IjIwMjAwMjAzVDE0MDAxNFoifV19\",\n      \"x-amz-credential\":\"AKIA2G7PPQXJEY3T5ZUY/20200203/us-east-1/s3/aws4_request\",\n      \"x-amz-algorithm\":\"AWS4-HMAC-SHA256\",\n      \"x-amz-date\":\"20200203T140014Z\",\n      \"x-amz-signature\":\"64293c94304af1dae67810e5891c242286a1d4408ae1bcab358352fac5bb1d9f\"\n   },\n   \"headers\":{\n   },\n   \"method\":\"post\",\n   \"url\":\"https://702192518610-bucket-name.s3.amazonaws.com\"\n}\n```\n</details>\n\n<details>\n  <summary> 2. Direct S3 post</summary>\n\n#### 2. Direct S3 post\nSend a post request with the file directly to the S3 bucket\n```\ncurl -X POST \\\n  https://702192518610-bucket-name.s3.amazonaws.com \\\n  -H 'Accept: */*' \\\n  -H 'Accept-Encoding: gzip, deflate' \\\n  -H 'Cache-Control: no-cache' \\\n  -H 'Connection: keep-alive' \\\n  -H 'Content-Length: 55202' \\\n  -H 'Content-Type: multipart/form-data; boundary=--------------------------432643489472093979729877' \\\n  -H 'Host: 702192518610-bucket-name.s3.amazonaws.com' \\\n  -H 'cache-control: no-cache' \\\n  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW' \\\n  -F key=cache/14786af0988ba48beef2bbb111f903d9.pdf \\\n  -F 'Content-Disposition=inline; filename=\"document.pdf\"; filename*=UTF-8'\\'''\\''document.pdf' \\\n  -F Content-Type=application/pdf \\\n  -F policy=eyJleHBpcmF0aW9uIjoiMjAyMC0wMi0wM1QxNTowMDoxNFoiLCJjb25kaXRpb25zIjpbeyJidWNrZXQiOiI3MDIxOTI1MTg2MTAtYXBpLWFpZGVudHlmeS1zdGFnaW5nIn0seyJrZXkiOiJjYWNoZS8xNDc4NmFmMDk4OGJhNDhiZWVmMmJiYjExMWY5MDNkOS5wbmcifSxbImNvbnRlbnQtbGVuZ3RoLXJhbmdlIiwwLDEwNDg1NzYwXSx7IkNvbnRlbnQtRGlzcG9zaXRpb24iOiJpbmxpbmU7IGZpbGVuYW1lPVwiaW1wbGFudC5wbmdcIjsgZmlsZW5hbWUqPVVURi04JydpbXBsYW50LnBuZyJ9LHsiQ29udGVudC1UeXBlIjoiaW1hZ2UvcG5nIn0seyJ4LWFtei1jcmVkZW50aWFsIjoiQUtJQTJHN1BQUVhKRVkzVDVaVVkvMjAyMDAyMDMvdXMtZWFzdC0xL3MzL2F3czRfcmVxdWVzdCJ9LHsieC1hbXotYWxnb3JpdGhtIjoiQVdTNC1ITUFDLVNIQTI1NiJ9LHsieC1hbXotZGF0ZSI6IjIwMjAwMjAzVDE0MDAxNFoifV19 \\\n  -F x-amz-credential=AKIA2G7PPQXJEY3T5ZUY/20200203/us-east-1/s3/aws4_request \\\n  -F x-amz-algorithm=AWS4-HMAC-SHA256 \\\n  -F x-amz-date=20200203T140014Z \\\n  -F x-amz-signature=64293c94304af1dae67810e5891c242286a1d4408ae1bcab358352fac5bb1d9f \\\n  -F file=@/path-to-file/document.pdf\n```\nYou will receive a 204 (no content) response code on success. The header `Location` will include a URL which you will need to parse to retrieve the `id`\n```\nLocation: https://702192518610-bucket-name.s3.amazonaws.com/cache%2F14786af0988ba48beef2bbb111f903d9.png\n```\n</details>\n\n<details>\n  <summary> 3. Backend endpoint</summary>\n\n#### 3. Backend endpoint\nSend the following `upload_data` JSON attribute to the backend\n```\n\"upload_data\": {\n  \"id\": \"14786af0988ba48beef2bbb111f903d9.png\",\n  \"storage\": \"cache\",\n  \"metadata\": {\n    \"size\": selected_file.size,\n    \"filename\": selected_file.name,\n    \"mime_type\": selected_file.mime_type\n  }\n}\n```\n`upload_data` attribute is example, for real attribute name please check documentation.\nPlease check upload documentation for resource that you are uploading to.\n</details>\n",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/v1/confirmations": {
+      "post": {
+        "summary": "Request confirmation email 1",
+        "tags": [
+          "Confirmations"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "sends confirmation email": {
+                  "summary": "sends confirmation email",
+                  "value": {
+                    "data": {
+                      "type": "confirmation",
+                      "id": "",
+                      "attributes": {
+                        "email": "user_1@example.com",
+                        "password": "testing"
+                      }
+                    }
+                  }
+                },
+                "does not send confirmation email": {
+                  "summary": "does not send confirmation email",
+                  "value": {
+                    "data": {
+                      "type": "confirmation",
+                      "id": "",
+                      "attributes": {
+                        "email": "random_user@example.com"
+                      }
+                    }
+                  }
+                },
+                "does not resend confirmation email": {
+                  "summary": "does not resend confirmation email",
+                  "value": {
+                    "data": {
+                      "type": "confirmation",
+                      "id": "",
+                      "attributes": {
+                        "email": "user_2@example.com"
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/confirmations/create.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "any": {}
+            },
+            "headers": {}
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "does not send confirmation email": {
+                    "summary": "does not send confirmation email",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Email not found",
+                          "source": {
+                            "parameter": "email",
+                            "pointer": "data/attributes/email"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "does not resend confirmation email": {
+                    "summary": "does not resend confirmation email",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Email was already confirmed, please try signing in",
+                          "source": {
+                            "parameter": "email",
+                            "pointer": "data/attributes/email"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Confirm user",
+        "tags": [
+          "Confirmations"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "confirms user": {
+                  "summary": "confirms user",
+                  "value": {
+                    "data": {
+                      "type": "confirmation",
+                      "id": "",
+                      "attributes": {
+                        "confirmation_token": "valid_token"
+                      }
+                    }
+                  }
+                },
+                "does not confirm user": {
+                  "summary": "does not confirm user",
+                  "value": {
+                    "data": {
+                      "type": "confirmation",
+                      "id": "",
+                      "attributes": {
+                        "confirmation_token": "invalid_token"
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/confirmations/update.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "any": {}
+            },
+            "headers": {}
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "does not confirm user": {
+                    "summary": "does not confirm user",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Confirmation token is invalid",
+                          "source": {
+                            "parameter": "confirmation_token",
+                            "pointer": "data/attributes/confirmation_token"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/passwords": {
+      "post": {
+        "summary": "Request password reset email",
+        "tags": [
+          "Passwords"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "sends reset password email": {
+                  "summary": "sends reset password email",
+                  "value": {
+                    "data": {
+                      "type": "password",
+                      "id": "",
+                      "attributes": {
+                        "email": "user_5@example.com"
+                      }
+                    }
+                  }
+                },
+                "returns error details": {
+                  "summary": "returns error details",
+                  "value": {
+                    "data": {
+                      "type": "password",
+                      "id": "",
+                      "attributes": {
+                        "email": "non_existing@example.com"
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/passwords/create.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "any": {}
+            },
+            "headers": {}
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns error details": {
+                    "summary": "returns error details",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Email not found",
+                          "source": {
+                            "parameter": "email",
+                            "pointer": "data/attributes/email"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Reset password",
+        "tags": [
+          "Passwords"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "sets new password": {
+                  "summary": "sets new password",
+                  "value": {
+                    "data": {
+                      "type": "password",
+                      "id": "",
+                      "attributes": {
+                        "reset_password_token": "Gkz9ppLMmJ1GyUPfZZoj",
+                        "password": "new-password",
+                        "password_confirmation": "new-password"
+                      }
+                    }
+                  }
+                },
+                "returns error details": {
+                  "summary": "returns error details",
+                  "value": {
+                    "data": {
+                      "type": "password",
+                      "id": "",
+                      "attributes": {
+                        "reset_password_token": "invalid-token",
+                        "password": "new-password",
+                        "password_confirmation": "new-password"
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/passwords/update.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "any": {}
+            },
+            "headers": {}
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns error details": {
+                    "summary": "returns error details",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Reset password token is invalid",
+                          "source": {
+                            "parameter": "reset_password_token",
+                            "pointer": "data/attributes/reset_password_token"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/registrations": {
+      "post": {
+        "summary": "Create user",
+        "tags": [
+          "Registrations"
+        ],
+        "description": "Register",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "registers new user": {
+                  "summary": "registers new user",
+                  "value": {
+                    "data": {
+                      "type": "registration",
+                      "id": "",
+                      "attributes": {
+                        "email": "johndoe@email.com",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "password": "14e7d4c0e6967e2ef372",
+                        "terms_accepted": true
+                      }
+                    }
+                  }
+                },
+                "returns error details": {
+                  "summary": "returns error details",
+                  "value": {
+                    "data": {
+                      "type": "registration",
+                      "id": "",
+                      "attributes": {
+                        "email": "johndoe@email.com",
+                        "password": "johndoe123",
+                        "terms_and_conditions": false
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/registrations/create.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "registers new user": {
+                    "summary": "registers new user",
+                    "value": {
+                      "data": {
+                        "id": "39",
+                        "type": "user",
+                        "attributes": {
+                          "first_name": "John",
+                          "last_name": "Doe",
+                          "avatar_url": null
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/users/item.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns error details": {
+                    "summary": "returns error details",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "First name can't be blank",
+                          "source": {
+                            "parameter": "first_name",
+                            "pointer": "data/attributes/first_name"
+                          }
+                        },
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Terms and conditions must be accepted",
+                          "source": {
+                            "parameter": "terms_and_conditions",
+                            "pointer": "data/attributes/terms_and_conditions"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions": {
+      "post": {
+        "summary": "Create Session",
+        "tags": [
+          "Sessions"
+        ],
+        "description": "Log in",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "logs in user": {
+                  "summary": "logs in user",
+                  "value": {
+                    "data": {
+                      "type": "session",
+                      "id": "",
+                      "attributes": {
+                        "email": "user@example.com",
+                        "password": "password12"
+                      }
+                    }
+                  }
+                },
+                "returns error details": {
+                  "summary": "returns error details",
+                  "value": {
+                    "data": {
+                      "type": "session",
+                      "id": "",
+                      "attributes": {
+                        "email": "user@example.com",
+                        "password": "wrong_password"
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/sessions/create.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "logs in user": {
+                    "summary": "logs in user",
+                    "value": {
+                      "data": {
+                        "id": "current",
+                        "type": "session",
+                        "attributes": {
+                          "email": "user@example.com"
+                        },
+                        "relationships": {
+                          "user": {
+                            "data": {
+                              "id": "40",
+                              "type": "user"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/sessions/item.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns error details": {
+                    "summary": "returns error details",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Password Invalid password",
+                          "source": {
+                            "parameter": "password",
+                            "pointer": "data/attributes/password"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{id}": {
+      "delete": {
+        "summary": "Destroy Session",
+        "tags": [
+          "Sessions"
+        ],
+        "description": "Log out",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "example": "current"
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "any": {
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/companies/item.json"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns error details": {
+                    "summary": "returns error details",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unauthorized",
+                          "code": "UNAUTHORIZED",
+                          "title": "Unauthorized",
+                          "detail": "Must be logged in to perform this action"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Show Session",
+        "tags": [
+          "Sessions"
+        ],
+        "description": "Get current session",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "example": "current"
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns user session": {
+                    "summary": "returns user session",
+                    "value": {
+                      "data": {
+                        "id": "current",
+                        "type": "session",
+                        "attributes": {
+                          "email": "user_10@example.com"
+                        },
+                        "relationships": {
+                          "user": {
+                            "data": {
+                              "id": "43",
+                              "type": "user"
+                            }
+                          }
+                        }
+                      },
+                      "included": [
+                        {
+                          "id": "43",
+                          "type": "user",
+                          "attributes": {
+                            "first_name": "Duncan",
+                            "last_name": null,
+                            "avatar_url": "memory://41d7b95d61ca4a000f5dc5c978b16f41.png"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/sessions/item.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns error": {
+                    "summary": "returns error",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unauthorized",
+                          "code": "UNAUTHORIZED",
+                          "title": "Unauthorized",
+                          "detail": "Must be logged in to perform this action"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bookings": {
+      "post": {
+        "summary": "Create booking",
+        "tags": [
+          "Bookings"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "creates a booking": {
+                  "summary": "creates a booking",
+                  "value": {
+                    "data": {
+                      "type": "booking",
+                      "id": "",
+                      "attributes": {
+                        "no_of_seats": 2
+                      },
+                      "relationships": {
+                        "flight": {
+                          "data": {
+                            "id": "11",
+                            "type": "flight"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "responds with unprocessable entity error": {
+                  "summary": "responds with unprocessable entity error",
+                  "value": {
+                    "data": {
+                      "type": "booking",
+                      "id": "",
+                      "attributes": {
+                        "no_of_seats": null
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/bookings/create.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "creates a booking": {
+                    "summary": "creates a booking",
+                    "value": {
+                      "data": {
+                        "id": "1",
+                        "type": "booking",
+                        "attributes": {
+                          "no_of_seats": 2,
+                          "seat_price": 193,
+                          "total_price": 386
+                        },
+                        "relationships": {
+                          "flight": {
+                            "data": {
+                              "id": "11",
+                              "type": "flight"
+                            }
+                          },
+                          "user": {
+                            "data": {
+                              "id": "44",
+                              "type": "user"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/bookings/item.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "responds with unauthenticated error": {
+                    "summary": "responds with unauthenticated error",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unauthorized",
+                          "code": "UNAUTHORIZED",
+                          "title": "Unauthorized",
+                          "detail": "Must be logged in to perform this action"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "responds with unprocessable entity error": {
+                    "summary": "responds with unprocessable entity error",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Flight must exist",
+                          "source": {
+                            "parameter": "flight",
+                            "pointer": "data/attributes/flight"
+                          }
+                        },
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "No of seats can't be blank",
+                          "source": {
+                            "parameter": "no_of_seats",
+                            "pointer": "data/attributes/no_of_seats"
+                          }
+                        },
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "No of seats is not a number",
+                          "source": {
+                            "parameter": "no_of_seats",
+                            "pointer": "data/attributes/no_of_seats"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/companies": {
+      "post": {
+        "summary": "Create company",
+        "tags": [
+          "Companies"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "creates a company": {
+                  "summary": "creates a company",
+                  "value": {
+                    "data": {
+                      "type": "companies",
+                      "id": "",
+                      "attributes": {
+                        "name": "Croatia Airlines"
+                      }
+                    }
+                  }
+                },
+                "responds with unprocessable entity error": {
+                  "summary": "responds with unprocessable entity error",
+                  "value": {
+                    "data": {
+                      "type": "companies",
+                      "id": "",
+                      "attributes": {
+                        "name": null
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/companies/upsert.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "creates a company": {
+                    "summary": "creates a company",
+                    "value": {
+                      "data": {
+                        "id": "33",
+                        "type": "company",
+                        "attributes": {
+                          "name": "Croatia Airlines"
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/companies/item.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "responds with unprocessable entity error": {
+                    "summary": "responds with unprocessable entity error",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Name can't be blank",
+                          "source": {
+                            "parameter": "name",
+                            "pointer": "data/attributes/name"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List companies",
+        "tags": [
+          "Companies"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filter[name]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Lufthansa"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "descripion": "Sort by any attribute",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name"
+              ]
+            },
+            "example": "-name"
+          },
+          {
+            "in": "query",
+            "name": "page[number]",
+            "descripion": "Return paginated page",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 1
+            },
+            "example": 1
+          },
+          {
+            "in": "query",
+            "name": "page[size]",
+            "descripion": "Set a number of returned results",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 100
+            },
+            "example": 30
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns companies": {
+                    "summary": "returns companies",
+                    "value": {
+                      "data": [
+                        {
+                          "id": "36",
+                          "type": "company",
+                          "attributes": {
+                            "name": "Croatia Airlines"
+                          }
+                        },
+                        {
+                          "id": "37",
+                          "type": "company",
+                          "attributes": {
+                            "name": "British Airways"
+                          }
+                        }
+                      ],
+                      "meta": {
+                        "current_page": 1,
+                        "total_pages": 1,
+                        "total_count": 2,
+                        "padding": 0,
+                        "page_size": 20,
+                        "max_page_size": 100
+                      },
+                      "links": {
+                        "self": "https://example-app.byinfinum.co/api/v1/companies?filter%5Bname%5D=air&page%5Bnumber%5D=1&page%5Bpadding%5D=0&page%5Bsize%5D=20&sort=-name",
+                        "first": "https://example-app.byinfinum.co/api/v1/companies?filter%5Bname%5D=air&page%5Bnumber%5D=1&page%5Bpadding%5D=0&page%5Bsize%5D=20&sort=-name",
+                        "last": "https://example-app.byinfinum.co/api/v1/companies?filter%5Bname%5D=air&page%5Bnumber%5D=1&page%5Bpadding%5D=0&page%5Bsize%5D=20&sort=-name"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/companies/collection.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/companies/{id}": {
+      "delete": {
+        "summary": "Destroy company",
+        "tags": [
+          "Companies"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": "34"
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content",
+            "content": {
+              "any": {
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/companies/item.json"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "responds with unprocessable entity error": {
+                    "summary": "responds with unprocessable entity error",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Cannot delete record because dependent flights exist",
+                          "source": {
+                            "parameter": "base",
+                            "pointer": "data/attributes/base"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Show company",
+        "tags": [
+          "Companies"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": "39"
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns a company": {
+                    "summary": "returns a company",
+                    "value": {
+                      "data": {
+                        "id": "39",
+                        "type": "company",
+                        "attributes": {
+                          "name": "Schiller Inc"
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/companies/item.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "responds with not found error": {
+                    "summary": "responds with not found error",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "not found",
+                          "code": "RECORD_NOT_FOUND",
+                          "title": "Not found",
+                          "detail": "Resource not found"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update company",
+        "tags": [
+          "Companies"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": "41"
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "updates a company": {
+                  "summary": "updates a company",
+                  "value": {
+                    "data": {
+                      "type": "companies",
+                      "id": "",
+                      "attributes": {
+                        "name": "Croatia Airlines"
+                      }
+                    }
+                  }
+                },
+                "responds with unprocessable entity error": {
+                  "summary": "responds with unprocessable entity error",
+                  "value": {
+                    "data": {
+                      "type": "companies",
+                      "id": "",
+                      "attributes": {
+                        "name": null
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/companies/upsert.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "updates a company": {
+                    "summary": "updates a company",
+                    "value": {
+                      "data": {
+                        "id": "41",
+                        "type": "company",
+                        "attributes": {
+                          "name": "Croatia Airlines"
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/companies/item.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "responds with unprocessable entity error": {
+                    "summary": "responds with unprocessable entity error",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "Name can't be blank",
+                          "source": {
+                            "parameter": "name",
+                            "pointer": "data/attributes/name"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/presign/": {
+      "get": {
+        "summary": "Get s3 presign params",
+        "tags": [
+          "File upload"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filename",
+            "schema": {
+              "type": "string",
+              "example": "document.pdf"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "example": "application/pdf"
+            }
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/json"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json; charset=utf-8": {
+                "examples": {
+                  "returns s3 params": {
+                    "summary": "returns s3 params",
+                    "value": {
+                      "fields": {
+                        "key": "cache/ff9cff186808e355abde696fdfb57459.pdf",
+                        "Content-Disposition": "inline; filename=\"document.pdf\"; filename*=UTF-8''document.pdf",
+                        "Content-Type": "application/pdf",
+                        "policy": "eyJleHBpcmF0aW9uIjoiMjAyMi0wMS0yNVQxNDoxMjozNFoiLCJjb25kaXRpb25zIjpbeyJidWNrZXQiOiJmYWtlLWJ1Y2tldCJ9LHsia2V5IjoiY2FjaGUvZmY5Y2ZmMTg2ODA4ZTM1NWFiZGU2OTZmZGZiNTc0NTkucGRmIn0seyJDb250ZW50LURpc3Bvc2l0aW9uIjoiaW5saW5lOyBmaWxlbmFtZT1cImRvY3VtZW50LnBkZlwiOyBmaWxlbmFtZSo9VVRGLTgnJ2RvY3VtZW50LnBkZiJ9LHsiQ29udGVudC1UeXBlIjoiYXBwbGljYXRpb24vcGRmIn0sWyJjb250ZW50LWxlbmd0aC1yYW5nZSIsMCw1MjQyODgwXSx7IngtYW16LWNyZWRlbnRpYWwiOiJmYWtlLWtleS1pZC8yMDIyMDEyNS9mYWtlLXJlZ2lvbi9zMy9hd3M0X3JlcXVlc3QifSx7IngtYW16LWFsZ29yaXRobSI6IkFXUzQtSE1BQy1TSEEyNTYifSx7IngtYW16LWRhdGUiOiIyMDIyMDEyNVQxMzEyMzRaIn1dfQ==",
+                        "x-amz-credential": "fake-key-id/20220125/fake-region/s3/aws4_request",
+                        "x-amz-algorithm": "AWS4-HMAC-SHA256",
+                        "x-amz-date": "20220125T131234Z",
+                        "x-amz-signature": "a4f79914f6804be45806b66b6c36404c2fc279447fa4cec244e88be0930dc0f5"
+                      },
+                      "headers": {},
+                      "method": "post",
+                      "url": "https://fake-bucket.s3.fake-region.amazonaws.com"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/flights": {
+      "get": {
+        "summary": "List flights",
+        "tags": [
+          "Flights"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filter[name]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Zagreb"
+          },
+          {
+            "in": "query",
+            "name": "filter[base_price_lte]",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 200
+          },
+          {
+            "in": "query",
+            "name": "filter[base_price_gte]",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "example": 100
+          },
+          {
+            "in": "query",
+            "name": "filter[arrives_at]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "2020-11-22"
+          },
+          {
+            "in": "query",
+            "name": "filter[departs_at]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "2020-11-22"
+          },
+          {
+            "in": "query",
+            "name": "filter[destination]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "2"
+          },
+          {
+            "in": "query",
+            "name": "filter[departure]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "in": "query",
+            "name": "filter[company]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1,2,3"
+          },
+          {
+            "in": "query",
+            "name": "filter[airplane_model]",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "airbus_a380",
+                "airbus_a320",
+                "airbus_a319",
+                "boeing_737",
+                "boeing_747",
+                "boeing_777"
+              ]
+            },
+            "example": "boeing_737"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "descripion": "Sort by any attribute",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "base_price",
+                "name",
+                "departs_at",
+                "arrives_at",
+                "company.name"
+              ]
+            },
+            "example": "-base_price"
+          },
+          {
+            "in": "query",
+            "name": "page[number]",
+            "descripion": "Return paginated page",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 1
+            },
+            "example": 1
+          },
+          {
+            "in": "query",
+            "name": "page[size]",
+            "descripion": "Set a number of returned results",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 100
+            },
+            "example": 30
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns flights": {
+                    "summary": "returns flights",
+                    "value": {
+                      "data": [
+                        {
+                          "id": "13",
+                          "type": "flight",
+                          "attributes": {
+                            "airplane_model": "boeing_737",
+                            "departs_at": "2022-01-30T13:12:34.707Z",
+                            "arrives_at": "2022-01-30T15:12:34.707Z",
+                            "base_price": 100,
+                            "current_seat_price": 166,
+                            "name": "Flight 3"
+                          },
+                          "relationships": {
+                            "company": {
+                              "data": {
+                                "id": "43",
+                                "type": "company"
+                              }
+                            },
+                            "departure": {
+                              "data": {
+                                "id": "31",
+                                "type": "location"
+                              }
+                            },
+                            "destination": {
+                              "data": {
+                                "id": "32",
+                                "type": "location"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "id": "14",
+                          "type": "flight",
+                          "attributes": {
+                            "airplane_model": "airbus_a380",
+                            "departs_at": "2022-01-30T13:12:34.723Z",
+                            "arrives_at": "2022-01-30T15:12:34.723Z",
+                            "base_price": 500,
+                            "current_seat_price": 833,
+                            "name": "Flight 4"
+                          },
+                          "relationships": {
+                            "company": {
+                              "data": {
+                                "id": "44",
+                                "type": "company"
+                              }
+                            },
+                            "departure": {
+                              "data": {
+                                "id": "33",
+                                "type": "location"
+                              }
+                            },
+                            "destination": {
+                              "data": {
+                                "id": "34",
+                                "type": "location"
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "meta": {
+                        "current_page": 1,
+                        "total_pages": 1,
+                        "total_count": 2,
+                        "padding": 0,
+                        "page_size": 20,
+                        "max_page_size": 100
+                      },
+                      "links": {
+                        "self": "https://example-app.byinfinum.co/api/v1/flights?filter%5Bdeparts_at%5D=2022-01-30+13%3A12%3A34+UTC&page%5Bnumber%5D=1&page%5Bpadding%5D=0&page%5Bsize%5D=20",
+                        "first": "https://example-app.byinfinum.co/api/v1/flights?filter%5Bdeparts_at%5D=2022-01-30+13%3A12%3A34+UTC&page%5Bnumber%5D=1&page%5Bpadding%5D=0&page%5Bsize%5D=20",
+                        "last": "https://example-app.byinfinum.co/api/v1/flights?filter%5Bdeparts_at%5D=2022-01-30+13%3A12%3A34+UTC&page%5Bnumber%5D=1&page%5Bpadding%5D=0&page%5Bsize%5D=20"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/flights/collection.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/locations": {
+      "get": {
+        "summary": "List locations",
+        "tags": [
+          "Locations"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filter[name]",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Zagreb"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "descripion": "Sort by any attribute",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name"
+              ]
+            },
+            "example": "-name"
+          },
+          {
+            "in": "query",
+            "name": "page[number]",
+            "descripion": "Return paginated page",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 1
+            },
+            "example": 1
+          },
+          {
+            "in": "query",
+            "name": "page[size]",
+            "descripion": "Set a number of returned results",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 100
+            },
+            "example": 30
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "returns locations": {
+                    "summary": "returns locations",
+                    "value": {
+                      "data": [
+                        {
+                          "id": "37",
+                          "type": "location",
+                          "attributes": {
+                            "name": "Zagreb"
+                          }
+                        },
+                        {
+                          "id": "38",
+                          "type": "location",
+                          "attributes": {
+                            "name": "Zadar"
+                          }
+                        }
+                      ],
+                      "meta": {
+                        "current_page": 1,
+                        "total_pages": 1,
+                        "total_count": 2,
+                        "padding": 0,
+                        "page_size": 20,
+                        "max_page_size": 100
+                      },
+                      "links": {
+                        "self": "https://example-app.byinfinum.co/api/v1/locations?filter%5Bname%5D=za&page%5Bnumber%5D=1&page%5Bpadding%5D=0&page%5Bsize%5D=20&sort=-name",
+                        "first": "https://example-app.byinfinum.co/api/v1/locations?filter%5Bname%5D=za&page%5Bnumber%5D=1&page%5Bpadding%5D=0&page%5Bsize%5D=20&sort=-name",
+                        "last": "https://example-app.byinfinum.co/api/v1/locations?filter%5Bname%5D=za&page%5Bnumber%5D=1&page%5Bpadding%5D=0&page%5Bsize%5D=20&sort=-name"
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/locations/collection.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}": {
+      "patch": {
+        "summary": "Update user",
+        "tags": [
+          "Users"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "number"
+            },
+            "example": "46"
+          },
+          {
+            "name": "length",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            },
+            "example": "46"
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "example": "application/vnd.api+json"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.api+json": {
+              "examples": {
+                "updates a user": {
+                  "summary": "updates a user",
+                  "value": {
+                    "data": {
+                      "type": "user",
+                      "id": "",
+                      "attributes": {
+                        "first_name": "Mark",
+                        "last_name": "Markson",
+                        "avatar": {
+                          "id": "3c6cc291908d5414c6d4ca81bad08416",
+                          "storage": "cache",
+                          "metadata": {
+                            "size": 23125,
+                            "filename": "image.png"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "responds with unprocessable entity error": {
+                  "summary": "responds with unprocessable entity error",
+                  "value": {
+                    "data": {
+                      "type": "users",
+                      "id": "",
+                      "attributes": {
+                        "first_name": null
+                      }
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/request/users/update.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "updates a user": {
+                    "summary": "updates a user",
+                    "value": {
+                      "data": {
+                        "id": "46",
+                        "type": "user",
+                        "attributes": {
+                          "first_name": "Mark",
+                          "last_name": "Markson",
+                          "avatar_url": "memory://3c6cc291908d5414c6d4ca81bad08416"
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/users/item.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "responds with unauthenticated error": {
+                    "summary": "responds with unauthenticated error",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unauthorized",
+                          "code": "UNAUTHORIZED",
+                          "title": "Unauthorized",
+                          "detail": "Must be logged in to perform this action"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/vnd.api+json; charset=utf-8": {
+                "examples": {
+                  "responds with unprocessable entity error": {
+                    "summary": "responds with unprocessable entity error",
+                    "value": {
+                      "errors": [
+                        {
+                          "status": "unprocessable entity",
+                          "code": "UNPROCESSABLE_ENTITY",
+                          "title": "Unprocessable Entity",
+                          "detail": "First name can't be blank",
+                          "source": {
+                            "parameter": "first_name",
+                            "pointer": "data/attributes/first_name"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "/Users/stef/dev/ruby/rails-jsonapi-example-app/spec/docs/v1/schemas/response/error.json"
+                }
+              }
+            },
+            "headers": {
+              "Content-Type": {
+                "description": "application/vnd.api+json; charset=utf-8"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Confirmations",
+      "description": ""
+    },
+    {
+      "name": "Passwords",
+      "description": ""
+    },
+    {
+      "name": "Registrations",
+      "description": ""
+    },
+    {
+      "name": "Sessions",
+      "description": ""
+    },
+    {
+      "name": "Bookings",
+      "description": ""
+    },
+    {
+      "name": "Companies",
+      "description": ""
+    },
+    {
+      "name": "File upload",
+      "description": ""
+    },
+    {
+      "name": "Flights",
+      "description": ""
+    },
+    {
+      "name": "Locations",
+      "description": ""
+    },
+    {
+      "name": "Users",
+      "description": ""
+    }
+  ],
+  "x-tagGroups": [
+    {
+      "name": "Auth",
+      "tags": [
+        "Confirmations",
+        "Passwords",
+        "Registrations",
+        "Sessions"
+      ]
+    },
+    {
+      "name": "Bookings",
+      "tags": [
+        "Bookings"
+      ]
+    },
+    {
+      "name": "Companies",
+      "tags": [
+        "Companies"
+      ]
+    },
+    {
+      "name": "File upload",
+      "tags": [
+        "File upload"
+      ]
+    },
+    {
+      "name": "Flights",
+      "tags": [
+        "Flights"
+      ]
+    },
+    {
+      "name": "Locations",
+      "tags": [
+        "Locations"
+      ]
+    },
+    {
+      "name": "Users",
+      "tags": [
+        "Users"
+      ]
+    }
+  ]
+}
