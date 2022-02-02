@@ -272,7 +272,7 @@ paths:
               description: application/vnd.api+json; charset=utf-8
   /api/v1/passwords:
     post:
-      summary: Request password reset email
+      summary: Request password reset email 1
       tags:
         - Passwords
       description: ''
