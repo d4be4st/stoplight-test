@@ -129,7 +129,7 @@ info:
 paths:
   /api/v1/confirmations:
     post:
-      summary: Request confirmation email 1
+      summary: Request confirmation email
       tags:
         - Confirmations
       description: ''
@@ -137,9 +137,15 @@ paths:
         - name: Accept
           in: header
           example: application/vnd.api+json
+          schema:
+            type: string
+          required: true
         - name: Content-Type
           in: header
           example: application/vnd.api+json
+          schema:
+            type: string
+          required: true
       requestBody:
         content:
           application/vnd.api+json:
@@ -209,6 +215,7 @@ paths:
           headers:
             Content-Type:
               description: application/vnd.api+json; charset=utf-8
+      x-internal: false
     patch:
       summary: Confirm user
       tags:
@@ -270,6 +277,9 @@ paths:
           headers:
             Content-Type:
               description: application/vnd.api+json; charset=utf-8
+    trace:
+      summary: ''
+      operationId: trace-api-v1-confirmations
   /api/v1/passwords:
     post:
       summary: Request password reset email 1
@@ -1587,3 +1597,15 @@ x-tagGroups:
   - name: Users
     tags:
       - Users
+servers:
+  - url: 'http://localhost:3000'
+    description: localhost
+components:
+  securitySchemes:
+    Api Key:
+      name: key
+      type: apiKey
+      in: query
+      description: ''
+security:
+  - Api Key: []

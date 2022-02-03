@@ -1,0 +1,641 @@
+openapi: 3.0.0
+info:
+  description: Bla
+  contact:
+    name: name
+    url: url
+  version: 0.1.0
+  title: Product Registration API
+servers:
+  - url: 'https://dev.product-registration.da.saeco.com/api'
+    description: Development Server
+  - url: 'https://www.product-registration.da.saeco.com/api'
+    description: Production Server
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Accept:
+      name: Accept
+      in: header
+      description: Media type requested by client
+      required: true
+      schema:
+        type: string
+        enum:
+          - application/vnd.oneka.v2.0+json
+    pathId:
+      name: id
+      in: path
+      description: The id of the resource
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/vnd.oneka.v2.0+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/vnd.oneka.v2.0+json:
+          schema:
+            type: object
+            required:
+              - title
+              - status
+              - detail
+            properties:
+              title:
+                type: string
+                example: Unauthorized
+              status:
+                type: integer
+                example: 401
+              detail:
+                type: string
+                example: Full authentication is required to access this resource
+    Forbidden:
+      description: Forbidden
+      content:
+        application/vnd.oneka.v2.0+json:
+          schema:
+            type: object
+            required:
+              - title
+              - status
+              - detail
+            properties:
+              title:
+                type: string
+                example: Forbidden
+              status:
+                type: integer
+                example: 403
+              detail:
+                type: string
+                example: Access is denied
+    NotFound:
+      description: Not Found
+      content:
+        application/vnd.oneka.v2.0+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnsupportedMediaType:
+      description: Unsupported Media Type
+      content:
+        application/vnd.oneka.v2.0+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      required:
+        - title
+        - status
+        - detail
+      properties:
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+    Product:
+      type: object
+      required:
+        - _links
+        - productNumber
+        - catalog
+        - locale
+        - purchasedOn
+        - createdAt
+        - lastModifiedAt
+        - isPremiumEligible
+      properties:
+        _embedded:
+          type: object
+          properties:
+            premiumService:
+              $ref: '#/components/schemas/PremiumService'
+        productNumber:
+          type: string
+          example: HC5410/83
+        catalog:
+          type: string
+          enum:
+            - CARE
+          example: CARE
+        locale:
+          type: string
+          example: en_GB
+        purchasedOn:
+          type: string
+          format: date
+          example: '2021-05-31'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2021-05-31T17:53:12Z'
+        lastModifiedAt:
+          type: string
+          format: date-time
+          example: '2021-05-31T17:53:12Z'
+        isPremiumEligible:
+          type: boolean
+          readOnly: true
+          example: false
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: 'https://api.example.com/User/self/Product/00000000-0000-0000-0000-000000000000'
+            addPremiumService:
+              type: object
+              description: This link is provided when no PremiumService is attached to the Product (i.e. when registering a new Product)
+              properties:
+                href:
+                  type: string
+                  example: 'https://api/example.com/User/self/Product/00000000-0000-0000-0000-000000000000/PremiumService'
+            premiumService:
+              type: object
+              description: This link is provided when there is a PremiumService attached to the current Product
+              properties:
+                href:
+                  type: string
+                  example: 'https://api.example.com/User/self/Product/PremiumService/00000000-0000-0000-0000-000000000000'
+    PremiumService:
+      type: object
+      required:
+        - _links
+        - phoneNumber
+        - addressLine1
+        - addressLine2
+        - communicationOptIn
+      properties:
+        _embedded:
+          type: object
+          properties:
+            invoice:
+              $ref: '#/components/schemas/Media'
+        phoneNumber:
+          type: string
+          example: '+4930947712376'
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+        communicationOptIn:
+          type: boolean
+          default: false
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: 'https://api.example.com/User/self/Product/00000000-0000-0000-0000-000000000000/PremiumService/00000000-0000-0000-0000-000000000000'
+            invoice:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: 'https://api.example.com/User/self/Media/00000000-0000-0000-0000-000000000000'
+    Media:
+      type: object
+      properties:
+        url:
+          type: string
+          readOnly: true
+          description: S3 Presigned URL
+          example: 'https://api.example.com/media/(bucketId)/(id).jpg'
+        createdAt:
+          type: string
+          readOnly: true
+          format: date-time
+          example: '2021-05-31T17:53:12Z'
+        lastModifiedAt:
+          type: string
+          readOnly: true
+          format: date-time
+          example: '2021-05-31T17:53:12Z'
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                  example: 'https://api.example.com/User/self/Media/00000000-0000-0000-0000-000000000000'
+security:
+  - BearerAuth: []
+paths:
+  /User/self/Product:
+    post:
+      tags:
+        - Products
+      summary: Registers a product
+      description: Registers a new product for the authorized user
+      parameters:
+        - $ref: '#/components/parameters/Accept'
+      requestBody:
+        content:
+          application/vnd.oneka.v2.0+json:
+            schema:
+              type: object
+              required:
+                - productNumber
+                - catalog
+                - locale
+                - purchasedOn
+              properties:
+                productNumber:
+                  type: string
+                  example: HC5410/83
+                catalog:
+                  type: string
+                  enum:
+                    - CARE
+                  example: CARE
+                locale:
+                  type: string
+                  pattern: '^[a-z]{2}(_[A-Z]{2})?$'
+                  example: en_GB
+                purchasedOn:
+                  type: string
+                  format: date
+                  example: '2021-05-31'
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                format: url
+              description: Location of the newly created resource
+          content:
+            application/vnd.oneka.v2.0+json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+      operationId: o1
+    get:
+      tags:
+        - Products
+      summary: Lists registered products
+      description: Lists registered products for the authorized user. Results are ordered by purchase date (desc).
+      parameters:
+        - $ref: '#/components/parameters/Accept'
+        - name: page
+          in: query
+          description: Page index (1..N)
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: The size of the page to be returned (1..N)
+          schema:
+            type: integer
+            default: 10
+        - name: sort
+          in: query
+          description: 'Sorting criteria in the format: property(,asc|desc). Default sort order is descending by purchasedOn. If no order direction is specified, asc is the default. Multiple sort criteria are supported.'
+          schema:
+            type: array
+            items:
+              type: string
+            default:
+              - 'purchasedOn,desc'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.oneka.v2.0+json:
+              schema:
+                type: object
+                required:
+                  - _embedded
+                  - _links
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      item:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Product'
+                  _links:
+                    type: object
+                    properties:
+                      first:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                            example: 'https://api.example.com/User/self/Product?page=1&size=10&sort=purchasedOn,desc'
+                      prev:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                            example: 'https://api.example.com/User/self/Product?page=2&size=10&sort=purchasedOn,desc'
+                      self:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                            example: 'https://api.example.com/User/self/Product?page=3&size=10&sort=purchasedOn,desc'
+                      next:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                            example: 'https://api.example.com/User/self/Product?page=4&size=10&sort=purchasedOn,desc'
+                      last:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                            example: 'https://api.example.com/User/self/Product?page=10&size=10&sort=purchasedOn,desc'
+                      item:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            href:
+                              type: string
+                              example: 'https://api.example.com/User/self/Product/00000000-0000-0000-0000-000000000000'
+                  page:
+                    type: object
+                    properties:
+                      size:
+                        type: integer
+                        example: 10
+                      totalElements:
+                        type: integer
+                        example: 40
+                      totalPages:
+                        type: integer
+                        example: 4
+                      number:
+                        type: integer
+                        example: 3
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+      operationId: o2
+  '/User/self/Product/{id}':
+    get:
+      tags:
+        - Products
+      summary: Shows registered product by id
+      description: Shows single registered product for the authorized user.
+      parameters:
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.oneka.v2.0+json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+      operationId: o3
+    patch:
+      tags:
+        - Products
+      summary: Updates a registered product by id
+      description: Updates a registered product for the authorized user.
+      parameters:
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/pathId'
+      requestBody:
+        content:
+          application/vnd.oneka.v2.0+json:
+            schema:
+              type: object
+              required:
+                - purchasedOn
+              properties:
+                purchasedOn:
+                  type: string
+                  format: date
+                  example: '2021-06-01'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.oneka.v2.0+json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+      operationId: o4
+    delete:
+      tags:
+        - Products
+      summary: Deletes a registered product by id
+      description: Deletes a registered product for the authorized user.
+      parameters:
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '204':
+          description: No Content
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+      operationId: o5
+  /User/self/Media:
+    post:
+      tags:
+        - Media
+      summary: Upload media (i.e. invoice)
+      description: 'Supported types: `jpg`, `png` and `pdf`. Max size allowed 5MB'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                format: url
+              description: Location of the newly created resource
+          content:
+            application/vnd.oneka.v2.0+json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+      operationId: o6
+  '/User/self/Media/{id}':
+    get:
+      tags:
+        - Media
+      summary: Get media resource by id
+      parameters:
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.oneka.v2.0+json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+      description: Desc
+      operationId: o7
+  '/User/self/Product/{id}/PremiumService':
+    post:
+      tags:
+        - PremiumService
+      summary: Add Premium service data
+      parameters:
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/pathId'
+      requestBody:
+        content:
+          application/vnd.oneka.v2.0+json:
+            schema:
+              type: object
+              required:
+                - addressLine1
+              properties:
+                _links:
+                  type: object
+                  properties:
+                    invoice:
+                      type: object
+                      properties:
+                        href:
+                          type: string
+                          example: 'https://api.example.com/User/self/Media/00000000-0000-0000-0000-000000000000'
+                phoneNumber:
+                  type: string
+                  example: '+4930947712376'
+                addressLine1:
+                  type: string
+                addressLine2:
+                  type: string
+                communicationOptIn:
+                  type: boolean
+                  default: false
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                format: url
+              description: Location of the newly created resource
+          content:
+            application/vnd.oneka.v2.0+json:
+              schema:
+                $ref: '#/components/schemas/PremiumService'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+      operationId: o8
+      description: Premium Service
+  '/User/self/Product/PremiumService/{id}':
+    get:
+      tags:
+        - PremiumService
+      summary: Get Premium service data by id
+      parameters:
+        - $ref: '#/components/parameters/Accept'
+        - $ref: '#/components/parameters/pathId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.oneka.v2.0+json:
+              schema:
+                $ref: '#/components/schemas/PremiumService'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+      operationId: o9
+      description: Premium service
+tags:
+  - name: Products
+  - name: Media
+  - name: PremiumService
